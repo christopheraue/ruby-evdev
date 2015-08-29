@@ -1,4 +1,5 @@
 require "bundler/setup"
+require "callbacks_attachable"
 require "evdev/version"
 require "evdev/converter"
 require "evdev/abs_axis"
