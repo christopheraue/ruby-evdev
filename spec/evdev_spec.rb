@@ -121,11 +121,31 @@ describe Evdev do
   describe "#grab: Grabs the device" do
     subject { instance.grab }
     it { is_expected.to send_message(:grab).to(Libevdev).with(:device, Libevdev::GRAB) }
+
+    context "when the grab is successful" do
+      before { allow(Libevdev).to receive(:grab).and_return(0) }
+      it { is_expected.to be true }
+    end
+
+    context "when the grab failed" do
+      before { allow(Libevdev).to receive(:grab).and_return(-1) }
+      it { is_expected.to be false }
+    end
   end
 
   describe "#ungrab: Ungrabs the device" do
     subject { instance.ungrab }
     it { is_expected.to send_message(:grab).to(Libevdev).with(:device, Libevdev::UNGRAB) }
+
+    context "when the ungrab is successful" do
+      before { allow(Libevdev).to receive(:grab).and_return(0) }
+      it { is_expected.to be true }
+    end
+
+    context "when the ungrab failed" do
+      before { allow(Libevdev).to receive(:grab).and_return(-1) }
+      it { is_expected.to be false }
+    end
   end
 
   describe "#supports_event?: Checks if it supports the given event" do

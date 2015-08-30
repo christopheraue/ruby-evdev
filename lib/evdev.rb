@@ -71,11 +71,11 @@ class Evdev
   end
 
   def grab
-    Libevdev.grab(@device, Libevdev::GRAB)
+    0 == Libevdev.grab(@device, Libevdev::GRAB)
   end
 
   def ungrab
-    Libevdev.grab(@device, Libevdev::UNGRAB)
+    0 == Libevdev.grab(@device, Libevdev::UNGRAB)
   end
 
   def supports_event?(event)
