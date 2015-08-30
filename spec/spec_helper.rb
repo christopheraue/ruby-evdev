@@ -1,3 +1,2 @@
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'evdev'
+require_relative '../lib/evdev'
 Bundler.require(:development)

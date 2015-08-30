@@ -23,16 +23,16 @@ class Evdev
       @event_names[type_int][code_int]
     end
 
+    private
+
     def int_to_type(int)
       @event_types ||= consts_starting_with('EV_')
       @event_types[int][3..-1]
     end
 
-    private
-
     def consts_starting_with(prefix)
       LinuxInput.constants(false).map do |const|
-        [LinuxInput.const_get(const), const] if const.to_s.starts_with? prefix
+        [LinuxInput.const_get(const), const] if const.to_s.start_with? prefix
       end.compact.to_h
     end
   end
