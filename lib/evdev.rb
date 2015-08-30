@@ -1,5 +1,6 @@
 require "bundler/setup"
 require "callbacks_attachable"
+require "libevdev"
 require "evdev/version"
 require "evdev/converter"
 require "evdev/abs_axis"
@@ -20,7 +21,7 @@ class Evdev
   def initialize(file_path)
     @file = File.open(file_path)
     device_ptr = FFI::MemoryPointer.new :pointer
-    Libevdev.new_from_fd(file.fileno, device_ptr)
+    Libevdev.new_from_fd(@file.fileno, device_ptr)
     @device = device_ptr.read_pointer
 
     ObjectSpace.define_finalizer(self, self.class.finalize(@device))
@@ -41,12 +42,12 @@ class Evdev
     Libevdev.get_uniq(@device)
   end
 
-  def product_id
-    Libevdev.get_id_product(@device)
-  end
-
   def vendor_id
     Libevdev.get_id_vendor(@device)
+  end
+
+  def product_id
+    Libevdev.get_id_product(@device)
   end
 
   def bustype
@@ -62,11 +63,11 @@ class Evdev
   end
 
   def has_property?(property)
-    1 == Libevdev.has_event_type(@device, Converter.property_to_int(property))
+    1 == Libevdev.has_property(@device, Converter.property_to_int(property))
   end
 
   def abs_axis(code)
-    AbsAxix.new(@device, Converter.code_to_int(code))
+    AbsAxis.new(@device, Converter.code_to_int(code))
   end
 
   def grab
@@ -79,12 +80,12 @@ class Evdev
 
   def supports_event?(event)
     type = Converter.code_to_type(event)
-    handles_event_type?(type) and handles_event_code?(type, code)
+    handles_event_type?(type) and handles_event_code?(type, event)
   end
 
-  def handle_events(mode = :blocking)
+  def handle_event(mode = :blocking)
     event = LinuxInput::InputEvent.new
-    Libevdev.next_event(evdev, Libevdev.const_get(:"LIBEVDEV_READ_FLAG_#{mode.upcase}"), event.pointer)
+    Libevdev.next_event(@device, Libevdev.const_get(:"READ_FLAG_#{mode.upcase}"), event.pointer)
     trigger(Converter.int_to_name(event[:type], event[:code]), event[:value])
   end
 
@@ -105,6 +106,6 @@ class Evdev
   end
 
   def handles_event_code?(type, code)
-    1 == Libevdev.has_event_type(@device, Converter.type_to_int(type), Converter.code_to_int(code))
+    1 == Libevdev.has_event_code(@device, Converter.type_to_int(type), Converter.code_to_int(code))
   end
 end

@@ -10,7 +10,7 @@ class Evdev
     end
 
     def type_to_int(type)
-      LinuxInput.const_get(:"EV_#{type.upcase}")
+      LinuxInput.const_get(type.upcase)
     end
 
     def code_to_int(code)
