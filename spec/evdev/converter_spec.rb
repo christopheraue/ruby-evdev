@@ -21,7 +21,7 @@ describe Evdev::Converter do
     it { is_expected.to be LinuxInput::KEY_A }
   end
 
-  describe "#int_to_name: Converts event type and code ints into a name" do
+  describe ".int_to_name: Converts event type and code ints into a name" do
     subject { instance.int_to_name(LinuxInput::EV_KEY, LinuxInput::KEY_A) }
     it { is_expected.to be :KEY_A }
   end
