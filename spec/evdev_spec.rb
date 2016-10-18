@@ -3,7 +3,7 @@ describe Evdev do
   subject(:instance) { klass.new(:file_path) }
 
   let(:file) { instance_double(File, fileno: :fd) }
-  let(:device_ptr) { instance_double(FFI::MemoryPointer, read_pointer: :device) }
+  let(:device_ptr) { instance_double(FFI::MemoryPointer, read_pointer: :input_device) }
   before { allow(File).to receive(:open).with(:file_path).and_return(file) }
   before { allow(FFI::MemoryPointer).to receive(:new).with(:pointer).and_return(device_ptr) }
   before { allow(klass).to receive(:finalize).and_return(:finalize) }
@@ -19,9 +19,9 @@ describe Evdev do
   end
 
   describe ".finalize: Returns a proc freeing the device" do
-    subject { klass.finalize(:device).call }
+    subject { klass.finalize(:input_device).call }
     before { allow(klass).to receive(:finalize).and_call_original }
-    it { is_expected.to send_message(:free).to(Libevdev).with(:device) }
+    it { is_expected.to send_message(:free).to(Libevdev).with(:input_device) }
   end
 
   describe ".all: Gets all event devices" do
@@ -47,49 +47,49 @@ describe Evdev do
 
   describe "#name: Gets its name" do
     subject { instance.name }
-    before { allow(Libevdev).to receive(:get_name).with(:device).and_return(:name) }
+    before { allow(Libevdev).to receive(:get_name).with(:input_device).and_return(:name) }
     it { is_expected.to be :name }
   end
 
   describe "#phys: Gets its physical location" do
     subject { instance.phys }
-    before { allow(Libevdev).to receive(:get_phys).with(:device).and_return(:phys) }
+    before { allow(Libevdev).to receive(:get_phys).with(:input_device).and_return(:phys) }
     it { is_expected.to be :phys }
   end
 
   describe "#uniq: Gets its unique identifier" do
     subject { instance.uniq }
-    before { allow(Libevdev).to receive(:get_uniq).with(:device).and_return(:uniq) }
+    before { allow(Libevdev).to receive(:get_uniq).with(:input_device).and_return(:uniq) }
     it { is_expected.to be :uniq }
   end
 
   describe "#vendor_id: Gets its vendor id" do
     subject { instance.vendor_id }
-    before { allow(Libevdev).to receive(:get_id_vendor).with(:device).and_return(:vendor_id) }
+    before { allow(Libevdev).to receive(:get_id_vendor).with(:input_device).and_return(:vendor_id) }
     it { is_expected.to be :vendor_id }
   end
 
   describe "#product_id: Gets its product id" do
     subject { instance.product_id }
-    before { allow(Libevdev).to receive(:get_id_product).with(:device).and_return(:product_id) }
+    before { allow(Libevdev).to receive(:get_id_product).with(:input_device).and_return(:product_id) }
     it { is_expected.to be :product_id }
   end
 
   describe "#bustype: Gets its bus type" do
     subject { instance.bustype }
-    before { allow(Libevdev).to receive(:get_id_bustype).with(:device).and_return(:bustype) }
+    before { allow(Libevdev).to receive(:get_id_bustype).with(:input_device).and_return(:bustype) }
     it { is_expected.to be :bustype }
   end
 
   describe "#version: Gets its firmware version" do
     subject { instance.version }
-    before { allow(Libevdev).to receive(:get_id_version).with(:device).and_return(:version) }
+    before { allow(Libevdev).to receive(:get_id_version).with(:input_device).and_return(:version) }
     it { is_expected.to be :version }
   end
 
   describe "#driver_version: Gets its driver's version" do
     subject { instance.driver_version }
-    before { allow(Libevdev).to receive(:get_driver_version).with(:device).and_return(:driver_version) }
+    before { allow(Libevdev).to receive(:get_driver_version).with(:input_device).and_return(:driver_version) }
     it { is_expected.to be :driver_version }
   end
 
@@ -100,12 +100,12 @@ describe Evdev do
         and_return(:property_int) }
 
     context "when it has the property" do
-      before { allow(Libevdev).to receive(:has_property).with(:device, :property_int).and_return(1) }
+      before { allow(Libevdev).to receive(:has_property).with(:input_device, :property_int).and_return(1) }
       it { is_expected.to be true }
     end
 
     context "when it does not have the property" do
-      before { allow(Libevdev).to receive(:has_property).with(:device, :property_int).and_return(0) }
+      before { allow(Libevdev).to receive(:has_property).with(:input_device, :property_int).and_return(0) }
       it { is_expected.to be false }
     end
   end
@@ -114,13 +114,13 @@ describe Evdev do
     subject { instance.abs_axis(:ABS_AXIS) }
     before { allow(klass::Converter).to receive(:code_to_int).with(:ABS_AXIS).
         and_return(:code_int) }
-    before { allow(klass::AbsAxis).to receive(:new).with(:device, :code_int).and_return(:abs_axis) }
+    before { allow(klass::AbsAxis).to receive(:new).with(:input_device, :code_int).and_return(:abs_axis) }
     it { is_expected.to be :abs_axis }
   end
 
   describe "#grab: Grabs the device" do
     subject { instance.grab }
-    it { is_expected.to send_message(:grab).to(Libevdev).with(:device, Libevdev::GRAB) }
+    it { is_expected.to send_message(:grab).to(Libevdev).with(:input_device, Libevdev::GRAB) }
 
     context "when the grab is successful" do
       before { allow(Libevdev).to receive(:grab).and_return(0) }
@@ -135,7 +135,7 @@ describe Evdev do
 
   describe "#ungrab: Ungrabs the device" do
     subject { instance.ungrab }
-    it { is_expected.to send_message(:grab).to(Libevdev).with(:device, Libevdev::UNGRAB) }
+    it { is_expected.to send_message(:grab).to(Libevdev).with(:input_device, Libevdev::UNGRAB) }
 
     context "when the ungrab is successful" do
       before { allow(Libevdev).to receive(:grab).and_return(0) }
@@ -156,22 +156,22 @@ describe Evdev do
     before { allow(klass::Converter).to receive(:code_to_int).with(:TYPE_CODE).and_return(:code_int) }
 
     context "when it does not support the event's type" do
-      before { allow(Libevdev).to receive(:has_event_type).with(:device, :type_int).and_return(0) }
-      before { allow(Libevdev).to receive(:has_event_code).with(:device, :type_int, :code_int).
+      before { allow(Libevdev).to receive(:has_event_type).with(:input_device, :type_int).and_return(0) }
+      before { allow(Libevdev).to receive(:has_event_code).with(:input_device, :type_int, :code_int).
           and_return(1) }
       it { is_expected.to be false }
     end
 
     context "when it does not support the event's code" do
-      before { allow(Libevdev).to receive(:has_event_type).with(:device, :type_int).and_return(1) }
-      before { allow(Libevdev).to receive(:has_event_code).with(:device, :type_int, :code_int).
+      before { allow(Libevdev).to receive(:has_event_type).with(:input_device, :type_int).and_return(1) }
+      before { allow(Libevdev).to receive(:has_event_code).with(:input_device, :type_int, :code_int).
           and_return(0) }
       it { is_expected.to be false }
     end
 
     context "when it does support the event" do
-      before { allow(Libevdev).to receive(:has_event_type).with(:device, :type_int).and_return(1) }
-      before { allow(Libevdev).to receive(:has_event_code).with(:device, :type_int, :code_int).
+      before { allow(Libevdev).to receive(:has_event_type).with(:input_device, :type_int).and_return(1) }
+      before { allow(Libevdev).to receive(:has_event_code).with(:input_device, :type_int, :code_int).
           and_return(1) }
       it { is_expected.to be true }
     end
@@ -192,13 +192,13 @@ describe Evdev do
     before { allow(instance).to receive(:trigger) }
 
     it { is_expected.to send_message(:next_event).to(Libevdev).
-        with(:device, Libevdev::READ_FLAG_BLOCKING, :event_ptr) }
+        with(:input_device, Libevdev::READ_FLAG_BLOCKING, :event_ptr) }
     it { is_expected.to send_message(:trigger).to(instance).with(:event_name, :event_value) }
 
     context "when a read mode is given explicitly" do
       subject { instance.handle_event(:normal) }
       it { is_expected.to send_message(:next_event).to(Libevdev).
-          with(:device, Libevdev::READ_FLAG_NORMAL, :event_ptr) }
+          with(:input_device, Libevdev::READ_FLAG_NORMAL, :event_ptr) }
     end
   end
 
@@ -206,12 +206,12 @@ describe Evdev do
     subject { instance.events_pending? }
 
     context "when it has pending events" do
-      before { allow(Libevdev).to receive(:has_event_pending).with(:device).and_return(1) }
+      before { allow(Libevdev).to receive(:has_event_pending).with(:input_device).and_return(1) }
       it { is_expected.to be true }
     end
 
     context "when it does not have pending events" do
-      before { allow(Libevdev).to receive(:has_event_pending).with(:device).and_return(0) }
+      before { allow(Libevdev).to receive(:has_event_pending).with(:input_device).and_return(0) }
       it { is_expected.to be false }
     end
   end
@@ -224,7 +224,7 @@ describe Evdev do
     before { allow(klass::Converter).to receive(:type_to_int).with(:EV_TYPE).and_return(:type_int) }
     before { allow(klass::Converter).to receive(:code_to_int).with(:TYPE_CODE).and_return(:code_int) }
 
-    before { allow(Libevdev).to receive(:get_event_value).with(:device, :type_int, :code_int).
+    before { allow(Libevdev).to receive(:get_event_value).with(:input_device, :type_int, :code_int).
         and_return(:event_value) }
     it { is_expected.to be :event_value }
 
