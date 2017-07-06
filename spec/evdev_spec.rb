@@ -117,7 +117,7 @@ describe Evdev do
 
   describe "#grab: Grabs the device" do
     subject { instance.grab }
-    it { is_expected.to send_message(:grab).to(Libevdev).with(:input_device, Libevdev::GRAB) }
+    before { expect(Libevdev).to receive(:grab).with(:input_device, Libevdev::GRAB) }
 
     context "when the grab is successful" do
       before { allow(Libevdev).to receive(:grab).and_return(0) }
@@ -132,7 +132,7 @@ describe Evdev do
 
   describe "#ungrab: Ungrabs the device" do
     subject { instance.ungrab }
-    it { is_expected.to send_message(:grab).to(Libevdev).with(:input_device, Libevdev::UNGRAB) }
+    before { expect(Libevdev).to receive(:grab).with(:input_device, Libevdev::UNGRAB) }
 
     context "when the ungrab is successful" do
       before { allow(Libevdev).to receive(:grab).and_return(0) }
@@ -188,14 +188,17 @@ describe Evdev do
     before { allow(Libevdev).to receive(:next_event) }
     before { allow(instance).to receive(:trigger) }
 
-    it { is_expected.to send_message(:next_event).to(Libevdev).
-        with(:input_device, Libevdev::READ_FLAG_BLOCKING, :event_ptr) }
-    it { is_expected.to send_message(:trigger).to(instance).with(:event_name, :event_value) }
+    before { expect(instance).to receive(:trigger).with(:event_name, :event_value) }
+
+    context "when a read mode is given implicitly" do
+      before { expect(Libevdev).to receive(:next_event).with(:input_device,
+        Libevdev::READ_FLAG_BLOCKING, :event_ptr) }
+    end
 
     context "when a read mode is given explicitly" do
       subject { instance.handle_event(:normal) }
-      it { is_expected.to send_message(:next_event).to(Libevdev).
-          with(:input_device, Libevdev::READ_FLAG_NORMAL, :event_ptr) }
+      before { expect(Libevdev).to receive(:next_event).with(:input_device,
+        Libevdev::READ_FLAG_NORMAL, :event_ptr) }
     end
   end
 
