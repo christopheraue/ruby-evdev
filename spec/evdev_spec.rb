@@ -6,22 +6,19 @@ describe Evdev do
   let(:device_ptr) { instance_double(FFI::MemoryPointer, read_pointer: :input_device) }
   before { allow(File).to receive(:open).with(:file_path).and_return(file) }
   before { allow(FFI::MemoryPointer).to receive(:new).with(:pointer).and_return(device_ptr) }
-  before { allow(klass).to receive(:finalize).and_return(:finalize) }
-  before { allow(Libevdev).to receive(:new_from_fd) }
-  before { allow(ObjectSpace).to receive(:define_finalizer) }
-
-  it { is_expected.to send_message(:new_from_fd).with(:fd, device_ptr).to(Libevdev) }
-  it { is_expected.to send_message(:define_finalizer).to(ObjectSpace).
-      with(kind_of(klass), :finalize) }
+  before { allow(Libevdev).to receive(:free).with(:input_device) }
+  before { allow(Libevdev).to receive(:new_from_fd).with(:fd, device_ptr) }
 
   it 'has a version number' do
     expect(Evdev::VERSION).not_to be nil
   end
 
-  describe ".finalize: Returns a proc freeing the device" do
-    subject { klass.finalize(:input_device).call }
-    before { allow(klass).to receive(:finalize).and_call_original }
-    it { is_expected.to send_message(:free).to(Libevdev).with(:input_device) }
+  describe "Freeing the device after an instance is gc'ed" do
+    subject { GC.start }
+    before { @instance = klass.new(:file_path) }
+    before { expect(Libevdev).to receive(:free).with(:input_device) }
+    before { @instance = nil }
+    it { is_expected.not_to raise_error }
   end
 
   describe ".all: Gets all event devices" do
