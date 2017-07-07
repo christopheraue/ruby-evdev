@@ -15,5 +15,5 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency "libevdev", "~> 1.0"
-  spec.add_runtime_dependency "callbacks_attachable", "~> 2.2"
+  spec.add_runtime_dependency "callbacks_attachable", "~> 2.3"
 end

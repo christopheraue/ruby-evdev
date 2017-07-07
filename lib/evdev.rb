@@ -86,7 +86,8 @@ class Evdev
   def handle_event(mode = :blocking)
     event = LinuxInput::InputEvent.new
     Libevdev.next_event(@device, Libevdev.const_get(:"READ_FLAG_#{mode.upcase}"), event.pointer)
-    trigger(Converter.int_to_name(event[:type], event[:code]), event[:value])
+    event_name = Converter.int_to_name(event[:type], event[:code])
+    trigger(event_name, event[:value], event_name)
   end
 
   def events_pending?

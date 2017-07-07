@@ -188,7 +188,7 @@ describe Evdev do
     before { allow(Libevdev).to receive(:next_event) }
     before { allow(instance).to receive(:trigger) }
 
-    before { expect(instance).to receive(:trigger).with(:event_name, :event_value) }
+    before { expect(instance).to receive(:trigger).with(:event_name, :event_value, :event_name) }
 
     context "when a read mode is given implicitly" do
       before { expect(Libevdev).to receive(:next_event).with(:input_device,
