@@ -1,9 +1,9 @@
-require "bundler/setup"
 require "callbacks_attachable"
 require "libevdev"
-require "evdev/version"
-require "evdev/converter"
-require "evdev/abs_axis"
+
+require_relative "evdev/version"
+require_relative "evdev/converter"
+require_relative "evdev/abs_axis"
 
 class Evdev
   include CallbacksAttachable
