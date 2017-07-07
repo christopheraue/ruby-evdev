@@ -4,7 +4,7 @@ Gem::Specification.new do |spec|
   spec.name          = "evdev"
   spec.version       = Evdev::VERSION
   spec.authors       = ["Christopher Aue"]
-  spec.email         = ["mail@christopheraue.net"]
+  spec.email         = ["rubygems@christopheraue.net"]
 
   spec.summary       = %q{A ruby object wrapper around libevdev bindings.}
   spec.homepage      = "https://github.com/christopheraue/ruby-evdev"
