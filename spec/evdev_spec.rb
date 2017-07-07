@@ -188,17 +188,28 @@ describe Evdev do
     before { allow(Libevdev).to receive(:next_event) }
     before { allow(instance).to receive(:trigger) }
 
-    before { expect(instance).to receive(:trigger).with(:event_name, :event_value, :event_name) }
-
     context "when a read mode is given implicitly" do
       before { expect(Libevdev).to receive(:next_event).with(:input_device,
         Libevdev::READ_FLAG_BLOCKING, :event_ptr) }
+
+      before { expect(instance).to receive(:trigger).with(:event_name, :event_value, :event_name) }
+      it { is_expected.not_to raise_error }
     end
 
     context "when a read mode is given explicitly" do
       subject { instance.handle_event(:normal) }
       before { expect(Libevdev).to receive(:next_event).with(:input_device,
         Libevdev::READ_FLAG_NORMAL, :event_ptr) }
+
+      before { expect(instance).to receive(:trigger).with(:event_name, :event_value, :event_name) }
+      it { is_expected.not_to raise_error }
+    end
+
+    context "when no events are pending" do
+      before { expect(Libevdev).to receive(:next_event).and_raise Errno::EAGAIN }
+
+      before { expect(instance).not_to receive(:trigger) }
+      it { is_expected.to raise_error(Evdev::AwaitEvent) }
     end
   end
 

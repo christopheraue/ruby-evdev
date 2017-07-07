@@ -8,6 +8,8 @@ require_relative "evdev/abs_axis"
 class Evdev
   include CallbacksAttachable
 
+  module AwaitEvent; end
+
   class << self
     def finalize(device)
       proc { Libevdev.free(device) }
@@ -88,6 +90,8 @@ class Evdev
     Libevdev.next_event(@device, Libevdev.const_get(:"READ_FLAG_#{mode.upcase}"), event.pointer)
     event_name = Converter.int_to_name(event[:type], event[:code])
     trigger(event_name, event[:value], event_name)
+  rescue Errno::EAGAIN => e
+    raise e.extend AwaitEvent
   end
 
   def events_pending?
