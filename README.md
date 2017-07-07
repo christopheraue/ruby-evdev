@@ -60,21 +60,24 @@ the code and it derives the implied type from it internally.
 keyboard.supports_event? :KEY_A     # => true
 keyboard.supports_event? :ABS_X     # => false
 
-key_a_handler = keyboard.on(:KEY_A) do |value|
-    puts "key 'a' #{%w(up down repeat)[value]}"
+key_handler = keyboard.on(:KEY_A, :KEY_S, :KEY_D, :KEY_F) do |state, key|
+  puts "#{%w(released pressed repeated)[state]} #{key}"
 end
 
 loop do
-    Kernel.select([keyboard.event_channel])
+  begin
     keyboard.handle_event
-    # => puts "key 'a' down" and "key 'a' up" on a single KEY_A stroke
+  rescue Evdev::AwaitEvent
+    Kernel.select([keyboard.event_channel])
+    retry
+  end
 end
 ```
 
 Removing the handler:
 
 ```ruby
-keyboard.off(:KEY_A, key_a_handler)
+key_handler.cancel
 ```
 
 Evdev includes the [CallbacksAttachable](https://github.com/christopheraue/ruby-callbacks_attachable)
